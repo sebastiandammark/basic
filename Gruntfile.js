@@ -44,6 +44,7 @@ module.exports = function(grunt) {
 	      options: {
 					httpPath: 'public',
 	        sassDir: 'app/sass',
+					imagesDir: 'public/images',
 	        cssDir: 'public/css',
 	        environment: 'production',
 					outputStyle: 'compressed',
@@ -56,6 +57,7 @@ module.exports = function(grunt) {
 	      options: {
 					httpPath: 'public',
 	        sassDir: 'app/sass',
+					imagesDir: 'public/images',
 	        cssDir: 'public/css',
 					environment: 'development',
 					outputStyle: 'expanded',
