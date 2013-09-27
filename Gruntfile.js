@@ -65,6 +65,59 @@ module.exports = function(grunt) {
 	    }
 	  },
 		clean: ["tmp"],
+		imagemin: {
+	    png: {
+	      options: {
+	        optimizationLevel: 7
+	      },
+	      files: [
+	        {
+	          // Set to true to enable the following options…
+	          expand: true,
+	          // cwd is 'current working directory'
+	          cwd: 'app/assets/images/',
+	          src: ['**/*.png'],
+	          // Could also match cwd line above. i.e. project-directory/img/
+	          dest: 'public/images',
+	          ext: '.png'
+	        }
+	      ]
+	    },
+	    jpg: {
+	      options: {
+	        progressive: true
+	      },
+	      files: [
+	        {
+	          // Set to true to enable the following options…
+	          expand: true,
+	          // cwd is 'current working directory'
+	          cwd: 'app/assets/images/',
+	          src: ['**/*.jpg'],
+	          // Could also match cwd. i.e. project-directory/img/
+	          dest: 'public/images',
+	          ext: '.jpg'
+	        }
+	      ]
+	    },
+			gif: {
+	      options: {
+	        progressive: true
+	      },
+	      files: [
+	        {
+	          // Set to true to enable the following options…
+	          expand: true,
+	          // cwd is 'current working directory'
+	          cwd: 'app/assets/images/',
+	          src: ['**/*.gif'],
+	          // Could also match cwd. i.e. project-directory/img/
+	          dest: 'public/images',
+	          ext: '.gif'
+	        }
+	      ]
+	    }
+	  },
 		watch: {
 		  css: {
 		    files: ['app/**/*.scss', 'app/**/*.js'],
@@ -82,9 +135,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-compass');
   grunt.loadNpmTasks('grunt-contrib-clean');
+	grunt.loadNpmTasks('grunt-contrib-imagemin');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Default task.
-  grunt.registerTask('default', ['watch', 'concat:dev', 'compass:dev', 'clean']);
-  grunt.registerTask('build', ['concat:dist', 'uglify:dist', 'compass:dist', 'clean']);
+  grunt.registerTask('default', ['watch', 'concat:dev', 'compass:dev', 'clean', 'imagemin']);
+  grunt.registerTask('build', ['concat:dist', 'uglify:dist', 'compass:dist', 'clean', 'imagemin']);
 };
