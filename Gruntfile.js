@@ -118,6 +118,19 @@ module.exports = function(grunt) {
 	      ]
 	    }
 	  },
+		'ftp-deploy': {
+		  stage: {
+		    auth: {
+		      host: '127.0.0.1',
+		      port: 21,
+		      authKey: 'figureitout'
+		    },
+		    src: 'public',
+		    dest: '{destination path}',
+		    exclusions: ['public/**/.DS_Store', 'public/**/Thumbs.db'],
+		    server_sep: '/'
+		  }
+		},
 		watch: {
 		  css: {
 		    files: ['app/**/*.scss', 'app/**/*.js'],
@@ -136,9 +149,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-compass');
   grunt.loadNpmTasks('grunt-contrib-clean');
 	grunt.loadNpmTasks('grunt-contrib-imagemin');
+	grunt.loadNpmTasks('grunt-ftp-deploy');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Default task.
   grunt.registerTask('default', ['watch', 'concat:dev', 'compass:dev', 'clean', 'imagemin']);
   grunt.registerTask('build', ['concat:dist', 'uglify:dist', 'compass:dist', 'clean', 'imagemin']);
+  grunt.registerTask('deploy:stage', ['build', 'ftp-deploy:stage']);
 };
