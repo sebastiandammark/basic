@@ -7,36 +7,38 @@ module.exports = function(grunt) {
 			server: {
 				options: {
 					port: 9000,
-					base: 'public'
+					base: 'public',
+					hostname: '*'
 				}
 			}
 		},
 		sass: {
-		dev: {
-			options: {
-				style: 'expanded'
+			dev: {
+				options: {
+					style: 'expanded',
+					lineNumbers: true
+				},
+				files: {
+					'tmp/css/concat/styles.css': 'app/sass/styles.scss'
+				}
 			},
-			files: {
-				'tmp/css/concat/styles.css': 'app/sass/styles.scss'
+			dist: {
+				options: {
+					style: 'compressed'
+				},
+				files: {
+					'tmp/css/concat/styles.css': 'app/sass/styles.scss'
+				}
 			}
 		},
-		dist: {
-			options: {
-				style: 'compressed'
-			},
-			files: {
-				'tmp/css/concat/styles.css': 'app/sass/styles.scss'
-			}
-		}
-	},
-  	concat: {
+	  concat: {
 			js: {
-        src: ['app/scripts/**js', 'app/vendor/**/*.js'],
-        dest: 'public/js/app.js'
+		        src: ['app/scripts/**js', 'app/vendor/**/*.js'],
+		        dest: 'public/js/app.js'
 			},
 			css: {
-      	src: ['tmp/css/concat/styles.css', 'app/vendor/**/*.css'],
-        dest: 'tmp/css/prefix/styles.css'
+		      	src: ['tmp/css/concat/styles.css', 'app/vendor/**/*.css'],
+		        dest: 'tmp/css/prefix/styles.css'
 			}
 		},
 		autoprefixer: {
@@ -48,19 +50,31 @@ module.exports = function(grunt) {
 				dest: 'public/css/styles.css'
 			}
 		},
+		file_append: {
+			default_options: {
+				files: {
+					'logging.txt': {
+						append: '<%= grunt.template.today("yyyy-mm-dd HH:MM") %>\n',
+						input: 'logging.txt'
+					}
+				}
+			}
+		},
 		copy: {
-	  	main: {
-	    	files: [
-	      	{expand: true, flatten: true, src: ['app/vendor/**/fonts/*.*'], dest: 'public/fonts/'},
-	      	{expand: true, flatten: true, src: ['app/vendor/**/*.{png,jpg,gif}'], dest: 'tmp/images/vendor/'},
-					{expand: true, flatten: true, src: ['app/markup/*.html'], dest: 'public/'}
-	    	]
-	  	},
-	  	dist: {
-	    	files: [
-					{expand: true, flatten: false, cwd: 'public/', src: ['**/*'], dest: 'dist/'}
-	    	]
-	  	}
+		  	main: {
+		    	files: [
+		      		{expand: true, flatten: true, src: ['app/vendor/**/fonts/*.*'], dest: 'public/fonts/'},
+		      		{expand: true, flatten: true, src: ['app/vendor/**/*.{png,jpg,gif}'], dest: 'tmp/images/vendor/'},
+		      		{expand: true, flatten: true, src: ['app/images/**/*.svg'], dest: 'public/images/'},
+					{expand: true, flatten: true, src: ['app/markup/*.html'], dest: 'public/'},
+					{expand: true, flatten: true, src: ['app/fonts/*.*'], dest: 'public/fonts'}
+		    	]
+		  	},
+		  	dist: {
+		    	files: [
+						{expand: true, flatten: false, cwd: 'public/', src: ['**/*'], dest: 'dist/'}
+		    	]
+		  	}
 		},
 		imagemin: {
 			vendor: {
@@ -79,7 +93,7 @@ module.exports = function(grunt) {
 					dest: 'public/images/'
 				}]
 			}
-  	},
+  		},
 		min: {
 		    dist: {
 		        src: ['public/js/app.js'],
@@ -92,7 +106,45 @@ module.exports = function(grunt) {
 		        dest: 'dist/css/styles.css'
 		    }
 		},
-		clean: ['tmp'],
+		clean: ['tmp', 'public', 'dist'],
+		'ftp-deploy': {
+			stage: {
+			    auth: {
+			      	host: '192.168.2.100',
+			      	port: 21,
+			      	authKey: 'stage'
+			    },
+		    	src: 'dist',
+		    	dest: 'Web/maptech',
+		    	exclusions: ['dist/**/.DS_Store', 'dist/**/Thumbs.db'],
+		    	server_sep: '/'
+		  	},
+		  	live: {
+			    auth: {
+			      	host: 'muliphein.dreamhost.com',
+			      	port: 21,
+			      	authKey: 'live'
+			    },
+		    	src: 'dist',
+		    	dest: '/maptech',
+		    	exclusions: ['dist/**/.DS_Store', 'dist/**/Thumbs.db'],
+		    	server_sep: '/'
+		  	}
+		},
+		cachebreaker: {
+			js: {
+				asset_url : '/js/app.js',
+				files: {
+					src : 'dist/*.html'
+				},
+			},
+			css: {
+				asset_url : '/css/styles.css',
+				files: {
+					src : 'dist/*.html'
+				},
+			}
+		},
 		watch: {
 			main: {
 	    	files: ['app/**/*.{html,js,scss}'],
@@ -101,7 +153,7 @@ module.exports = function(grunt) {
 		}
   });
 
-  // Load the plugin that provides the "uglify" task.
+  // Load the plugins.
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-sass');
@@ -113,10 +165,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-autoprefixer');
   grunt.loadNpmTasks('grunt-yui-compressor');
   grunt.loadNpmTasks('grunt-contrib-copy');
+	grunt.loadNpmTasks('grunt-file-append');
+	grunt.loadNpmTasks('grunt-cache-breaker');
 
   // Default task(s).
-  grunt.registerTask('build', ['sass:dev', 'concat', 'autoprefixer', 'copy:main', 'imagemin', 'clean']);
-  grunt.registerTask('dist', ['build', 'copy:dist', 'min', 'cssmin', 'clean']);
+  grunt.registerTask('build', ['clean', 'sass:dev', 'concat', 'autoprefixer', 'copy:main', 'imagemin', 'file_append']);
+  grunt.registerTask('dist', ['clean', 'build', 'copy:dist', 'cssmin', 'cachebreaker:js', 'cachebreaker:css', 'ftp-deploy:stage', 'clean']);
+  grunt.registerTask('live', ['clean', 'build', 'copy:dist', 'cssmin', 'cachebreaker:js', 'cachebreaker:css', 'ftp-deploy:live', 'clean']);
   grunt.registerTask('server', ['connect', 'build', 'watch']);
 
 };
